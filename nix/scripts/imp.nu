@@ -12,7 +12,7 @@ def find-imp-commands [] {
   | each { |dir|
       if ($dir | path exists) {
         ls $dir
-        | where type == "file"
+        | where type in ["file", "symlink"]
         | where name =~ "imp-"
         | get name
         | each { |p| $p | path basename }
@@ -52,17 +52,18 @@ def show-help [] {
 }
 
 # Main entry point
-def main [...args: string] {
-  if ($args | is-empty) {
+# Using --wrapped to capture all args including flags like --help
+def --wrapped main [...rest] {
+  if ($rest | is-empty) {
     show-help
     exit 0
   }
 
-  let subcommand = $args.0
-  let rest = ($args | skip 1)
+  let subcommand = $rest.0
+  let args = ($rest | skip 1)
 
   # Handle built-in commands
-  if $subcommand == "help" or $subcommand == "--help" or $subcommand == "-h" {
+  if $subcommand in ["help", "--help", "-h"] {
     show-help
     exit 0
   }
@@ -90,9 +91,9 @@ def main [...args: string] {
   }
 
   # Execute the command with remaining args
-  if ($rest | is-empty) {
+  if ($args | is-empty) {
     ^$cmd_path
   } else {
-    ^$cmd_path ...$rest
+    ^$cmd_path ...$args
   }
 }
