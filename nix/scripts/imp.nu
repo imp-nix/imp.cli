@@ -67,13 +67,13 @@ export def --wrapped main [...rest]: nothing -> any {
     let matches = ($commands | where {|name| $name | str starts-with $prefix })
 
     if ($matches | is-empty) {
-        print -e $"Error: unknown command '($rest | str join ' ')'"
-        print -e ""
-        print -e "Available commands:"
-        for g in (list-imp-groups $commands) {
-            print -e $"  ($g)"
+        let available = (list-imp-groups $commands | str join ", ")
+        let msg = if ($available | is-empty) {
+            $"unknown command '($rest | str join ' ')' - no imp modules loaded"
+        } else {
+            $"unknown command '($rest | str join ' ')'. Available: ($available)"
         }
-        exit 1
+        error make {msg: $msg}
     }
 
     if ($matches | length) == 1 {
