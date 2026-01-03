@@ -3,12 +3,13 @@
   self,
   ...
 }:
+let
+  impPackage = pkgs.runCommand "imp" { } ''
+    mkdir -p $out/lib
+    cp ${self}/nix/scripts/imp.nu $out/lib/imp
+  '';
+in
 {
-  imp = pkgs.writeShellScriptBin "imp" ''
-    exec ${pkgs.nushell}/bin/nu ${self}/nix/scripts/imp.nu "$@"
-  '';
-
-  default = pkgs.writeShellScriptBin "imp" ''
-    exec ${pkgs.nushell}/bin/nu ${self}/nix/scripts/imp.nu "$@"
-  '';
+  imp = impPackage;
+  default = impPackage;
 }
